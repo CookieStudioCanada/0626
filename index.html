@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pixel art</title>
+</head>
+<body>
+    
+<h1>
+    Pixel Art!
+</h1>
+
+<div id="toolbar">
+    <input type="color" id="colorPicker" value="#000000">
+    <button id="pencil">Pencil</button>
+    <button id="eraser">Eraser</button>
+    <button id="clear">Clear All</button>
+    <select id="formatSelect">
+        <option value="image/png">PNG</option>
+        <option value="image/jpeg">JPEG</option>
+        <option value="image/webp">WEBP</option>
+    </select>
+    <button id="saveBtn">Save</button>
+</div>
+
+<canvas id="gridCanvas" width="400" height="400" style="position: absolute; z-index: 0;"></canvas>
+<canvas id="drawingCanvas" width="400" height="400" style="position: absolute; z-index: 1; border:1px solid #d3d3d3;">
+Your browser does not support the HTML canvas tag.
+</canvas>
+
+<script>
+// get the canvas elements and the drawing contexts
+var gridCanvas = document.getElementById('gridCanvas');
+var gridCtx = gridCanvas.getContext('2d');
+var canvas = document.getElementById('drawingCanvas');
+var ctx = canvas.getContext('2d');
+
+// the size of each pixel
+var pixelSize = 10;
+
+// draw the pixel grid on the grid canvas
+gridCtx.strokeStyle = '#eeeeee';  // light gray
+for (var x = 0; x < gridCanvas.width; x += pixelSize) {
+    for (var y = 0; y < gridCanvas.height; y += pixelSize) {
+        gridCtx.strokeRect(x, y, pixelSize, pixelSize);
+    }
+}
+
+// keep track of the current drawing color and tool
+var currentColor = '#000000';
+var currentTool = 'pencil';
+var startX, startY, isDrawing = false;
+
+// handle mouse down event
+canvas.onmousedown = function(e) {
+    isDrawing = true;
+    startX = e.clientX - canvas.getBoundingClientRect().left;
+    startY = e.clientY - canvas.getBoundingClientRect().top;
+    if(currentTool == 'pencil' || currentTool == 'eraser') {
+        draw(e);
+    }
+}
+
+// handle mouse up event
+canvas.onmouseup = function(e) {
+    isDrawing = false;
+}
+
+// handle mouse move event
+canvas.onmousemove = function(e) {
+    if (isDrawing && (currentTool == 'pencil' || currentTool == 'eraser')) {
+        draw(e);
+    }
+}
+
+// handle color change
+document.getElementById('colorPicker').onchange = function(e) {
+    currentColor = e.target.value;
+}
+
+// handle pencil
+document.getElementById('pencil').onclick = function() {
+    currentTool = 'pencil';
+}
+
+// handle eraser
+document.getElementById('eraser').onclick = function() {
+    currentTool = 'eraser';
+}
+
+// handle clear
+document.getElementById('clear').onclick = function() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+}
+
+// handle save button
+document.getElementById('saveBtn').onclick = function() {
+    var format = document.getElementById('formatSelect').value;
+    var dataUrl = canvas.toDataURL(format);
+    var a = document.createElement('a');
+    a.href = dataUrl;
+    a.download = 'canvas.' + format.split('/')[1];
+    a.click();
+}
+
+// draw pixel
+function draw(e) {
+    var x = Math.floor((e.clientX - canvas.getBoundingClientRect().left) / pixelSize) * pixelSize;
+    var y = Math.floor((e.clientY - canvas.getBoundingClientRect().top) / pixelSize) * pixelSize;
+    if (currentTool == 'eraser') {
+        ctx.clearRect(x, y, pixelSize, pixelSize);
+    } else {
+        ctx.fillStyle = currentColor;
+        ctx.fillRect(x, y, pixelSize, pixelSize);
+    }
+}
+
+</script>
+
+</body>
+</html>
